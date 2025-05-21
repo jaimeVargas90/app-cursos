@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import mongoose, { HydratedDocument } from 'mongoose';
+import { HydratedDocument } from 'mongoose';
 
 export type CourseDocument = HydratedDocument<Course>;
 
@@ -11,8 +11,8 @@ export class Course {
   @Prop()
   price: number;
 
-  @Prop()
-  idAuthor: mongoose.Types.ObjectId;
+  //   @Prop()
+  //   idAuthor: mongoose.Types.ObjectId;
 
   @Prop()
   description: string;
