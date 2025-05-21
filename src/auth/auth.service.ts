@@ -1,26 +1,55 @@
-import { Injectable } from '@nestjs/common';
-import { CreateAuthDto } from './dto/create-auth.dto';
-import { UpdateAuthDto } from './dto/update-auth.dto';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { User, UserDocument } from 'src/users/model/user.schema';
+import { Model, Types } from 'mongoose';
+import { RegisterAuthDto } from './dto/register-auth.dto';
+import { compareHash, generateHash } from 'src/utils/handleBcrypt';
+import { LoginAuthDto } from './dto/login-auth.dto';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class AuthService {
-  create(createAuthDto: CreateAuthDto) {
-    return 'This action adds a new auth';
+  constructor(
+    private jwtService: JwtService,
+    @InjectModel(User.name) private readonly UserModel: Model<UserDocument>,
+  ) {}
+
+  public async register(userBody: RegisterAuthDto) {
+    const { password, ...user } = userBody;
+    const userParse = { ...user, password: await generateHash(password) };
+    return this.UserModel.create(userParse);
   }
 
-  findAll() {
-    return `This action returns all auth`;
-  }
+  public async login(userLoginBody: LoginAuthDto) {
+    const userExist = await this.UserModel.findOne({
+      email: userLoginBody.email,
+    });
 
-  findOne(id: number) {
-    return `This action returns a #${id} auth`;
-  }
+    const { password } = userLoginBody;
+    if (!userExist) throw new HttpException('NOT_FOUND', HttpStatus.NOT_FOUND);
 
-  update(id: number, updateAuthDto: UpdateAuthDto) {
-    return `This action updates a #${id} auth`;
-  }
+    const isChech = await compareHash(password, userExist.password);
+    if (!isChech)
+      throw new HttpException('PASSWORD_INVALID', HttpStatus.CONFLICT);
 
-  remove(id: number) {
-    return `This action removes a #${id} auth`;
+    const userFlat = userExist.toObject() as {
+      _id: Types.ObjectId;
+      password?: string;
+      [key: string]: any;
+    };
+    delete userFlat.password;
+
+    const payload = {
+      id: userFlat._id.toString(),
+    };
+
+    const token = this.jwtService.sign(payload);
+
+    const data = {
+      token: token,
+      user: userFlat,
+    };
+
+    return data;
   }
 }
