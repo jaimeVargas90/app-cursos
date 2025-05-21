@@ -6,6 +6,7 @@ import { AuthModule } from './auth/auth.module';
 import { VideosModule } from './videos/videos.module';
 import { AwardsModule } from './awards/awards.module';
 import { ConfigModule } from '@nestjs/config';
+import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { ConfigModule } from '@nestjs/config';
     AuthModule,
     VideosModule,
     AwardsModule,
+    UsersModule,
   ],
   controllers: [AppController],
   providers: [AppService],
