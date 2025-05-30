@@ -5,6 +5,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { User, UserSchema } from 'src/users/model/user.schema';
 import { JwtModule } from '@nestjs/jwt';
 import { UsersModule } from 'src/users/users.module';
+import { JwtStrategy } from './strategy/jwt.strategy';
 
 @Module({
   imports: [
@@ -14,7 +15,7 @@ import { UsersModule } from 'src/users/users.module';
         return {
           global: true,
           secret: process.env.JWT_SECRET,
-          signOptions: { expiresIn: '120s' },
+          signOptions: { expiresIn: '1h' },
         };
       },
     }),
@@ -26,6 +27,6 @@ import { UsersModule } from 'src/users/users.module';
     ]),
   ],
   controllers: [AuthController],
-  providers: [AuthService],
+  providers: [AuthService, JwtStrategy],
 })
 export class AuthModule {}
